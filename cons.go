@@ -6,11 +6,21 @@ import "fmt"
 type Type int
 
 const (
-	Symbol Type = iota
+	String Type = iota
 	Number
-	List
+	Symbol
 	Proc
-	Lambda
+	Pair
+	Closure
+	Continuation
+	Foreign
+	Character
+	Port
+	Vector
+	Macro
+	Promise
+	Environment
+	LastSystemType
 )
 
 type ConsList []Cons
@@ -23,10 +33,15 @@ type Cons struct {
 }
 
 func (cs Cons) String() string {
-	if cs.Number != 0 {
+	switch cs.Type {
+	case Number:
 		return fmt.Sprint(cs.Number)
+	case Pair:
+		return fmt.Sprint(cs.List)
+	default:
+		return cs.Value
 	}
-	return cs.Value
+
 }
 
 func NewSymbol(value string) Cons {
@@ -36,7 +51,7 @@ func NewNumber(number int64) Cons {
 	return Cons{Type: Number, Number: number}
 }
 func NewList(list []Cons) Cons {
-	return Cons{Type: List, List: list}
+	return Cons{Type: Pair, List: list}
 }
 func NewProc(fn func(ConsList) Cons) Cons {
 	return Cons{Type: Proc, Proc: fn}

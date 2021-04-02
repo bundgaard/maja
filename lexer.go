@@ -34,9 +34,9 @@ func (l *Lexer) skipSpace() {
 	}
 }
 func (l *Lexer) NextToken() string {
-	l.skipSpace()
-	out := ""
 
+	out := ""
+	l.skipSpace()
 	switch l.ch {
 	case '(':
 		out = string(l.ch)
@@ -45,7 +45,7 @@ func (l *Lexer) NextToken() string {
 	case '+', '-', '*', '/':
 		out = string(l.ch)
 	case 0:
-		return ""
+		return "EOF"
 	default:
 		if isLetter(l.ch) {
 			out = l.readIdentifier()

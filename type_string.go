@@ -8,16 +8,26 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[Symbol-0]
+	_ = x[String-0]
 	_ = x[Number-1]
-	_ = x[List-2]
+	_ = x[Symbol-2]
 	_ = x[Proc-3]
-	_ = x[Lambda-4]
+	_ = x[Pair-4]
+	_ = x[Closure-5]
+	_ = x[Continuation-6]
+	_ = x[Foreign-7]
+	_ = x[Character-8]
+	_ = x[Port-9]
+	_ = x[Vector-10]
+	_ = x[Macro-11]
+	_ = x[Promise-12]
+	_ = x[Environment-13]
+	_ = x[LastSystemType-14]
 }
 
-const _Type_name = "SymbolNumberListProcLambda"
+const _Type_name = "StringNumberSymbolProcPairClosureContinuationForeignCharacterPortVectorMacroPromiseEnvironmentLastSystemType"
 
-var _Type_index = [...]uint8{0, 6, 12, 16, 20, 26}
+var _Type_index = [...]uint8{0, 6, 12, 18, 22, 26, 33, 45, 52, 61, 65, 71, 76, 83, 94, 108}
 
 func (i Type) String() string {
 	if i < 0 || i >= Type(len(_Type_index)-1) {
