@@ -51,7 +51,7 @@ func (s *Scanner) NextToken() *Token {
 			token.Type = TokenNumber
 			return &token
 		} else {
-			token = Token{Type: TokenILLEGAL, Literal: string(s.current)}
+			token = Token{Type: TokenIllegal, Literal: string(s.current)}
 		}
 
 	}

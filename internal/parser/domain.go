@@ -25,14 +25,16 @@ func (e *Expression) String() string {
 
 	str := "("
 	str += e.car.String()
-	str += " "
+	str += " . "
 	str += e.cdr.String()
 	str += ")"
 	return str
 }
-
-type Node interface {
-	nodeType() lexer.TokenType
+func (e *Expression) Car() *Expression {
+	return e.car
+}
+func (e *Expression) Cdr() *Expression {
+	return e.cdr
 }
 
 type Parser struct {
@@ -71,4 +73,8 @@ func (p *Parser) list() *Expression {
 		return nil
 	}
 	panic("not supported")
+}
+
+func (p *Parser) Program() *Expression {
+	return nil
 }

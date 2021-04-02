@@ -9,16 +9,19 @@ type TokenType uint8
 
 const (
 	TokenEOF TokenType = iota
-	TokenILLEGAL
+	TokenOpenParen
+	TokenCloseParen
+	TokenIllegal
 	TokenAtom
 	TokenBoolean
 	TokenNumber
 	TokenIdentifier
-	TokenOpenParen
-	TokenCloseParen
 	TokenDot
 	TokenChar
 	TokenQuote
+	TokenDQuote
+	TokenBQuote
+	TokenComma
 	TokenNewline
 )
 
