@@ -33,7 +33,7 @@ func NewLexer(data string) *Lexer {
 }
 
 func (l *Lexer) skipSpace() {
-	if isSpace(l.ch) {
+	for isSpace(l.ch) {
 		l.readChar()
 	}
 }
@@ -50,6 +50,8 @@ func (l *Lexer) NextToken() string {
 		out = string(l.ch)
 	case '+', '-', '*', '/':
 		out = string(l.ch)
+	case '#':
+		out = l.readHash()
 	case 0:
 		return "EOF"
 	default:
@@ -71,6 +73,15 @@ func (l *Lexer) NextToken() string {
 	return out
 }
 
+func (l *Lexer) readHash() string {
+	index := l.index
+	l.readChar() // eat #
+	if l.ch == 't' || l.ch == 'f' {
+		l.readChar()
+	}
+	return l.data[index:l.index]
+}
+
 func (l *Lexer) readString() string {
 
 	l.readChar() // eat "
@@ -78,7 +89,9 @@ func (l *Lexer) readString() string {
 	for l.ch != '"' {
 		l.readChar()
 	}
-	return fmt.Sprintf("\"%s\"", l.data[index:l.index])
+	token := l.data[index:l.index]
+	l.readChar() // eat last "
+	return fmt.Sprintf("\"%s\"", token)
 
 }
 
@@ -91,10 +104,11 @@ func (l *Lexer) readNumber() string {
 }
 func (l *Lexer) readIdentifier() string {
 	index := l.index
-	for isLetter(l.ch) || unicode.IsSymbol(l.ch) {
+	for isLetter(l.ch) || unicode.IsSymbol(l.ch) || unicode.IsPunct(l.ch) {
 		l.readChar()
 	}
-	return l.data[index:l.index]
+	token := l.data[index:l.index]
+	return token
 }
 
 func isDigit(ch rune) bool {
@@ -105,5 +119,5 @@ func isSpace(ch rune) bool {
 	return unicode.IsSpace(ch) //  == ' ' || ch == '\r' || ch == '\n' || ch == '\t'
 }
 func isLetter(ch rune) bool {
-	return unicode.IsLetter(ch) //return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
+	return unicode.IsLetter(ch) || unicode.IsSymbol(ch) //return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
 }

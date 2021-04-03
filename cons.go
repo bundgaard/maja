@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/big"
+)
 
 //go:generate stringer -type Type
 type Type int
@@ -27,7 +30,7 @@ type ConsList []Cons
 type Cons struct {
 	Type   Type
 	Value  string
-	Number int64
+	Number *big.Int
 	List   ConsList
 	Proc   func(ConsList) Cons
 }
@@ -47,7 +50,7 @@ func (cs Cons) String() string {
 func NewSymbol(value string) Cons {
 	return Cons{Type: Symbol, Value: value}
 }
-func NewNumber(number int64) Cons {
+func NewNumber(number *big.Int) Cons {
 	return Cons{Type: Number, Number: number}
 }
 func NewList(list []Cons) Cons {

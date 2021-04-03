@@ -42,3 +42,27 @@ func TestParseWithBegin(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestParseWithSetBang(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"x", "x"},
+		{"set!", "set!"},
+		{"❤", "❤"},
+		{"#t", "#t"},
+		{"#f", "#f"},
+	}
+
+	for tidx, test := range tests {
+		l := NewLexer(test.input)
+		p := NewParser(l)
+
+		got := p.current
+		if got != test.expected {
+			t.Errorf("test [%03d] - expected %q. got=%q", tidx, test.expected, got)
+		}
+	}
+
+}

@@ -10,7 +10,10 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 
 	switch cons.Type {
 	case Symbol:
-		fn, ok := env.Find(cons.Value)[cons.Value]
+		if cons.Value[0] == '"' {
+			return NewSymbol(cons.Value[1 : len(cons.Value)-1]), nil
+		}
+		fn, ok := env.Environment[cons.Value]
 		if !ok {
 			return Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
 		}
@@ -39,7 +42,17 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			return cons, nil
 		// case "if":
 		// evaluate(cons.List[1], env) // return #T or #F
-
+		case "set!":
+			fmt.Printf("set %+v %+v\n", cons, cons.List[1])
+			temp, err := env.Find(cons.List[1].Value)
+			if err != nil {
+				fmt.Println(err)
+				return Cons{}, nil
+			}
+			fmt.Printf("temp %+v\n ", temp)
+			/*temp := env.Find(cons.List[1].Value)
+			temp[cons.List[1].Value], _ = evaluate(cons.List[2], env)*/
+			return Cons{}, nil
 		default:
 			// found proc +/-,
 			// log.Println("found proc", cons.List, cons.Value, cons.Number, cons.Type.String())
@@ -75,11 +88,7 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 	return Cons{}, nil
 }
 func main() {
-	// input := `(begin (define r 10) (+ 10 r))`
-	// input := `(+ 1 2 3 4 5)`
-
 	env := standardEnvironment()
-	_ = env
 	scanner := bufio.NewScanner(os.Stdin)
 	Prompt := "λ -> "
 
@@ -96,7 +105,7 @@ func main() {
 			continue
 		}
 
-		_, err := verifyParenthesis(line)
+		_, err := verifyParenthesis(line, nil)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -104,7 +113,6 @@ func main() {
 		l := NewLexer(line)
 		p := NewParser(l)
 		program := p.Parse()
-		fmt.Println(">>", program.String())
 		output, err := evaluate(program, env)
 		if err != nil {
 			fmt.Println(err)
@@ -113,8 +121,4 @@ func main() {
 		}
 
 	}
-	/*tokens := tokenize(input)
-	cons, _ := processSyntax(tokens)
-	evaluate(cons, env)
-	*/
 }

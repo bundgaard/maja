@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/big"
+)
 
 type Env struct {
 	Environment map[string]Cons
@@ -17,23 +20,30 @@ func (e *Env) Add(symbol string, item Cons) {
 	e.Environment[symbol] = item
 }
 
-func (e *Env) Find(symbol string) map[string]Cons {
+type errUnbound struct {
+	Symbol string
+}
+
+func (e errUnbound) Error() string {
+	return fmt.Sprintf("unbound %s", e.Symbol)
+}
+
+func (e *Env) Find(symbol string) (map[string]Cons, error) {
 	for ks := range e.Environment {
 		if ks == symbol {
-			return e.Environment
+			return e.Environment, nil
 		}
 	}
 	if e.Outer == nil {
-		fmt.Printf("unbound symbol '%s'", symbol)
+		return nil, errUnbound{Symbol: symbol}
 	} else {
 		return e.Outer.Find(symbol)
 	}
-	return nil
 }
 func add(list ConsList) Cons {
 	acc := list[0].Number
 	for i := 1; i < len(list); i++ {
-		acc += list[i].Number
+		acc.Add(acc, list[i].Number)
 	}
 	return NewNumber(acc)
 }
@@ -41,7 +51,7 @@ func add(list ConsList) Cons {
 func subtract(list ConsList) Cons {
 	acc := list[0].Number
 	for i := 1; i < len(list); i++ {
-		acc -= list[i].Number
+		acc.Sub(acc, list[i].Number)
 	}
 	return NewNumber(acc)
 }
@@ -49,14 +59,14 @@ func subtract(list ConsList) Cons {
 func multiply(list ConsList) Cons {
 	acc := list[0].Number
 	for i := 1; i < len(list); i++ {
-		acc *= list[i].Number
+		acc.Mul(acc, list[i].Number)
 	}
 	return NewNumber(acc)
 }
 func divide(list ConsList) Cons {
 	acc := list[0].Number
 	for i := 1; i < len(list); i++ {
-		acc /= list[i].Number
+		acc.Div(acc, list[i].Number)
 	}
 	return NewNumber(acc)
 }
@@ -85,7 +95,7 @@ func cdr(argv ConsList) Cons {
 }
 
 func sqrt(argv ConsList) Cons {
-	return NewNumber(0)
+	return NewNumber(big.NewInt(0))
 }
 
 func standardEnvironment() *Env {

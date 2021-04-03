@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"math/big"
 	"strconv"
 )
 
@@ -48,10 +48,9 @@ func (p *Parser) Parse() Cons {
 		default:
 			n, err := strconv.ParseInt(token, 0, 64)
 			if err != nil {
-				fmt.Println("parser return", token)
 				return NewSymbol(token)
 			}
-			return NewNumber(n)
+			return NewNumber(big.NewInt(n))
 
 		}
 
