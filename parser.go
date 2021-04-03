@@ -1,6 +1,9 @@
 package main
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 type Parser struct {
 	l       *Lexer
@@ -45,6 +48,7 @@ func (p *Parser) Parse() Cons {
 		default:
 			n, err := strconv.ParseInt(token, 0, 64)
 			if err != nil {
+				fmt.Println("parser return", token)
 				return NewSymbol(token)
 			}
 			return NewNumber(n)
