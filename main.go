@@ -3,57 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
-	"strconv"
 )
 
-func processSyntax(tokens []string) (Cons, []string) {
-
-	var token string
-
-	token, tokens = tokens[0], tokens[1:]
-
-	/*	eat(openparen)
-		processList(tokens)
-		eat(closeparen)*/
-
-	// expect pairs of parens () (()),
-	if token == "(" {
-		list := make(ConsList, 0)
-
-		if len(tokens) > 1 && tokens[0] != ")" {
-			for tokens[0] != ")" {
-				var cons Cons
-				cons, tokens = processSyntax(tokens)
-				list = append(list, cons)
-			}
-
-			tokens = tokens[1:]
-			return NewList(list), tokens
-		}
-		fmt.Println(tokens)
-		return NewSymbol("missing close parent"), tokens
-
-	} else if token == ")" {
-		log.Println("unexpected ')'")
-		return NewSymbol("unexpected ')'"), tokens
-	} else {
-		return atomic(token), tokens
-	}
-
-}
-
-func atomic(token string) Cons {
-	n, err := strconv.ParseInt(token, 0, 64)
-	if err != nil {
-		return NewSymbol(token)
-	} else {
-		return NewNumber(n)
-	}
-}
-
-func evaluate(cons Cons, env Env) (Cons, error) {
+func evaluate(cons Cons, env *Env) (Cons, error) {
 
 	switch cons.Type {
 	case Symbol:
@@ -75,7 +28,7 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 			if err != nil {
 				return NewSymbol("error"), err
 			}
-			env[cons.List[1].Value] = value
+			env.Environment[cons.List[1].Value] = value
 		case "begin":
 			for i := 1; i < len(cons.List)-1; i++ {
 				evaluate(cons.List[1], env)
@@ -84,6 +37,9 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 		case "lambda", "λ":
 			cons.Type = Closure
 			return cons, nil
+		// case "if":
+		// evaluate(cons.List[1], env) // return #T or #F
+
 		default:
 			// found proc +/-,
 			// log.Println("found proc", cons.List, cons.Value, cons.Number, cons.Type.String())
@@ -101,7 +57,13 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 				xs[i] = value
 			}
 			if proc.Type == Closure {
-				return evaluate(proc.List[2], standardEnvironment()) // add arguments from Lambda
+				newEnv := NewEnvironment(env)
+				newEnv.Outer = env
+				for idx, symbol := range proc.List[1].List {
+					newEnv.Add(symbol.Value, xs[idx])
+				}
+				// newEnv.Add(proc.List[1].List, xs)
+				return evaluate(proc.List[2], newEnv) // add arguments from Lambda
 			} else if proc.Type == Proc && len(xs) > 0 {
 				return proc.Proc(xs), nil
 			} else {
