@@ -19,7 +19,11 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 		if err != nil {
 			return Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
 		}
-		return env[cons.Value], nil
+		fn, ok := env[cons.Value]
+		if !ok {
+			return Cons{}, fmt.Errorf("'%s' not found in environment", cons)
+		}
+		return fn, nil
 	case Number:
 		return cons, nil
 	case Pair:
@@ -27,51 +31,33 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			return cons, nil
 		}
 		switch cons.List[0].Value {
-
-		/*
-						List map (const SLists& argv) {
-			    SList newList(SList::LIST);
-			    for (int i = 0; i < argv[1].getList().size(); i++) {
-			        SLists n;
-			        SList args(SList::LIST);
-			        n.push_back(argv[0].getProc());
-			        for (int j = 1; j < argv.size(); j++) {
-			            args.push(argv[j].getList()[i]);
-			        }
-			        n.push_back(args);
-			        newList.push(apply(n));
-			    }
-			    return newList;
-			}
-		*/
 		case "map":
-			// (map fn lst)
+			_ = cons.List[0] // ignore map
 			fn := cons.List[1]
-			out := make(ConsList, 0)
-			for i := 2; i < len(cons.List); i++ {
-				xs, err := evaluate(cons.List[i], env)
+			args := cons.List[2:]
+
+			result := make(ConsList, 0)
+			dummy, _ := evaluate(args[0], env)
+			for i := range dummy.List {
+				l := make(ConsList, len(dummy.List)+1) // +1 for the proc
+				l[0] = fn
+				for j := range args {
+					argv, _ := evaluate(args[j], env)
+					cell := argv.List[i]
+					l[j+1] = cell
+				}
+				cell, err := evaluate(NewList(l), env)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "error: map %+v %v\n", cons.List[i], err)
 					return Cons{}, err
 				}
-				l := make(ConsList, 0)
-				l = append(l, fn)
-
-				for j := range xs.List {
-
-					fmt.Printf("argv[%02d][%02d] %+v\n", i, j, xs.List[i])
-					l = append(l, xs.List[j])
-
-				}
-				fmt.Println("list", l)
-				out = append(out, l[0])
+				result = append(result, cell)
 			}
 
-			return NewList(out), nil
+			return NewList(result), nil
+
 		case "'", "quote":
 			return cons.List[1], nil
 		case "define":
-			fmt.Fprintf(os.Stderr, "define %+v\n", cons)
 			value, err := evaluate(cons.List[2], env)
 			if err != nil {
 				return NewSymbol("error"), err
@@ -87,18 +73,12 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 		case "lambda", "λ":
 			cons.Type = Closure
 			return cons, nil
-		// case "if":
-		// evaluate(cons.List[1], env) // return #T or #F
 		case "set!":
-			fmt.Printf("set %+v %+v\n", cons, cons.List[1])
-			temp, err := env.Find(cons.List[1].Value)
+			_, err := env.Find(cons.List[1].Value)
 			if err != nil {
 				fmt.Println(err)
-				return Cons{}, nil
+				return Cons{}, err
 			}
-			fmt.Printf("temp %+v\n ", temp)
-			/*temp := env.Find(cons.List[1].Value)
-			temp[cons.List[1].Value], _ = evaluate(cons.List[2], env)*/
 			return Cons{}, nil
 		case "if":
 			/* return evaluate(s.getList()[1],env).val()=="#t" ?
@@ -131,7 +111,6 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			if err != nil {
 				return NewSymbol("error"), err
 			}
-			// log.Println("proc", proc.Type, proc)
 			xs := args(cons)
 			for i := range xs {
 				value, err := evaluate(xs[i], env)
@@ -141,17 +120,12 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 				xs[i] = value
 			}
 			if proc.Type == Closure {
-
 				newEnv := NewEnvironment(env)
-				fmt.Fprintf(os.Stderr, "%+v\n", cons)
-				fmt.Fprintf(os.Stderr, "xs len %d\nproc %+v\n", len(xs), proc)
 				for idx, symbol := range proc.List[1].List {
-					fmt.Fprintf(os.Stderr, "adding %s:%s to new environmentn\n", symbol, xs[idx])
 					newEnv.Add(symbol.Value, xs[idx])
 				}
-				out, _ := evaluate(proc.List[2], newEnv)
-				fmt.Fprintf(os.Stderr, "evaluated lambda %v\n", out)
-				return out, nil
+				out, err := evaluate(proc.List[2], newEnv)
+				return out, err
 			} else if proc.Type == Proc && len(xs) > 0 {
 				return proc.Proc(xs), nil
 			} else {

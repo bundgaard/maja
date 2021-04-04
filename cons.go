@@ -33,6 +33,8 @@ func (cs Cons) String() string {
 		return fmt.Sprint(cs.Number)
 	case Pair, Closure:
 		return cs.ListToString()
+	case Proc:
+		return cs.Type.String()
 	default:
 		return cs.Value
 	}
