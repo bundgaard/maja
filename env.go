@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/big"
 )
 
 type Env struct {
@@ -83,6 +82,7 @@ func greaterThan(list ConsList) Cons {
 }
 
 func car(argv ConsList) Cons {
+	fmt.Println(argv)
 	return argv[0].List[0]
 }
 
@@ -95,9 +95,16 @@ func cdr(argv ConsList) Cons {
 }
 
 func sqrt(argv ConsList) Cons {
-	return NewNumber(big.NewInt(0))
+	return NewNumber(argv[0].Number.Sqrt(argv[0].Number))
 }
 
+func modulo(argv ConsList) Cons {
+	// modulo _ _ -> NewNumber
+	if len(argv) == 2 {
+		return NewNumber(argv[0].Number.Mod(argv[0].Number, argv[1].Number))
+	}
+	return NewSymbol("unexpected number of arguments")
+}
 func standardEnvironment() *Env {
 	env := NewEnvironment(nil)
 	env.Add("+", NewProc(add))
@@ -106,6 +113,8 @@ func standardEnvironment() *Env {
 	env.Add("-", NewProc(subtract))
 	env.Add("*", NewProc(multiply))
 	env.Add("/", NewProc(divide))
+
+	env.Add("modulo", NewProc(modulo))
 
 	env.Add("<", NewProc(lessThan))
 	env.Add(">", NewProc(greaterThan))

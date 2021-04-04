@@ -54,7 +54,15 @@ translateQuote
 (+ '(1 2 3 4)) -> (+ (quote(1 2 3 4)))
 */
 func translateQuote(data string, wrappedErr error) (string, error) {
+	var result string
+
 	indexOfQuote := strings.Index(data, "'")
-	fmt.Println("translateQuote", indexOfQuote)
-	return data, nil
+	result += data[:indexOfQuote]
+	result += "(quote "
+	indexOfCloseParen := strings.Index(data, ")")
+	result += data[indexOfQuote+1 : indexOfCloseParen+1]
+	result += ")"
+	result += data[indexOfCloseParen+1:]
+	fmt.Println("translateQuote", indexOfQuote, result)
+	return result, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/big"
 	"strconv"
 )
@@ -9,8 +10,6 @@ type Parser struct {
 	l       *Lexer
 	current string
 	peek    string
-
-	errors []string
 }
 
 func NewParser(l *Lexer) *Parser {
@@ -45,6 +44,9 @@ func (p *Parser) Parse() Cons {
 		case "(":
 			cons = p.parseList()
 			return cons
+		case "'", "quote": // TODO potential bug [[[]]]
+			cons = p.parseQuote()
+			return cons
 		default:
 			n, err := strconv.ParseInt(token, 0, 64)
 			if err != nil {
@@ -57,6 +59,13 @@ func (p *Parser) Parse() Cons {
 	}
 
 	return cons
+}
+func (p *Parser) parseQuote() Cons {
+	// '() -> Cons(List: Parse)
+	p.nextToken() // eat '
+	token := p.Parse()
+	fmt.Println("parseQuote", token)
+	return token
 }
 
 /*

@@ -53,6 +53,9 @@ func TestParseWithSetBang(t *testing.T) {
 		{"❤", "❤"},
 		{"#t", "#t"},
 		{"#f", "#f"},
+		{"modulo)", "modulo"},
+		{"hej-med", "hej-med"},
+		{"is-number?", "is-number?"},
 	}
 
 	for tidx, test := range tests {

@@ -52,6 +52,8 @@ func (l *Lexer) NextToken() string {
 		out = string(l.ch)
 	case '#':
 		out = l.readHash()
+	case '\'':
+		out = string(l.ch)
 	case 0:
 		return "EOF"
 	default:
@@ -104,7 +106,12 @@ func (l *Lexer) readNumber() string {
 }
 func (l *Lexer) readIdentifier() string {
 	index := l.index
-	for isLetter(l.ch) || unicode.IsSymbol(l.ch) || unicode.IsPunct(l.ch) {
+
+	for isLetter(l.ch) ||
+		unicode.IsSymbol(l.ch) ||
+		l.ch == rune('!') ||
+		l.ch == rune('-') ||
+		l.ch == rune('?') {
 		l.readChar()
 	}
 	token := l.data[index:l.index]

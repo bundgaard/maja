@@ -13,11 +13,11 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 		if cons.Value[0] == '"' {
 			return NewSymbol(cons.Value[1 : len(cons.Value)-1]), nil
 		}
-		fn, ok := env.Environment[cons.Value]
-		if !ok {
+		env, err := env.Find(cons.Value)
+		if err != nil {
 			return Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
 		}
-		return fn, nil
+		return env[cons.Value], nil
 	case Number:
 		return cons, nil
 	case Pair:
@@ -25,6 +25,8 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			return cons, nil
 		}
 		switch cons.List[0].Value {
+		case "quote", "'":
+			return cons.List[1], nil
 		case "define":
 			value, err := evaluate(cons.List[2], env)
 
@@ -53,6 +55,30 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			/*temp := env.Find(cons.List[1].Value)
 			temp[cons.List[1].Value], _ = evaluate(cons.List[2], env)*/
 			return Cons{}, nil
+		case "if":
+			/* return evaluate(s.getList()[1],env).val()=="#t" ?
+			evaluate(s.getList()[2],env) :
+				(s.getList()[3].val() == "else" ?
+					evaluate(s.getList()[4],env) :
+						SList());
+			*/
+			arg1, err := evaluate(cons.List[1], env)
+			if err != nil {
+				fmt.Println("error: if", err)
+				return Cons{}, err
+			}
+			if arg1.Value == "#t" {
+				arg2, err := evaluate(cons.List[2], env)
+				if err != nil {
+					fmt.Println("error: if true", err)
+
+				}
+				fmt.Println("arg2", arg2)
+
+			} else {
+				return Cons{}, nil
+			}
+
 		default:
 			// found proc +/-,
 			// log.Println("found proc", cons.List, cons.Value, cons.Number, cons.Type.String())
@@ -80,7 +106,7 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			} else if proc.Type == Proc && len(xs) > 0 {
 				return proc.Proc(xs), nil
 			} else {
-				return evaluate(proc, env)
+				fmt.Println("nothing to execute", cons)
 			}
 
 		}
