@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/big"
 	"strconv"
 )
@@ -64,8 +63,10 @@ func (p *Parser) parseQuote() Cons {
 	// '() -> Cons(List: Parse)
 	p.nextToken() // eat '
 	token := p.Parse()
-	fmt.Println("parseQuote", token)
-	return token
+	l := make(ConsList, 0)
+	l = append(l, NewSymbol("'"), token)
+	out := NewList(l)
+	return out
 }
 
 /*

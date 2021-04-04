@@ -9,6 +9,7 @@ import (
 type Lexer struct {
 	data      string
 	ch        rune
+	peek      rune
 	index     int
 	nextIndex int
 }
@@ -21,6 +22,8 @@ func (l *Lexer) readChar() {
 	} else {
 		r, size = utf8.DecodeRuneInString(l.data[l.nextIndex:])
 		l.ch = r
+		r, _ = utf8.DecodeRuneInString(l.data[l.nextIndex+size:])
+		l.peek = r
 	}
 	l.index = l.nextIndex
 	l.nextIndex += size
@@ -88,10 +91,11 @@ func (l *Lexer) readString() string {
 
 	l.readChar() // eat "
 	index := l.index
-	for l.ch != '"' {
+	for l.ch != '"' && l.ch != 0 {
 		l.readChar()
 	}
 	token := l.data[index:l.index]
+
 	l.readChar() // eat last "
 	return fmt.Sprintf("\"%s\"", token)
 

@@ -1,8 +1,28 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 )
+
+func TestQuote(t *testing.T) {
+	tests := []struct {
+		input string
+
+		expected string
+	}{
+		{"'(1 2 3)", "'(1 2 3)"},
+	}
+
+	for _, test := range tests {
+		l := NewLexer(test.input)
+		p := NewParser(l)
+
+		cons := p.Parse()
+
+		fmt.Println(cons)
+	}
+}
 
 func TestParse(t *testing.T) {
 

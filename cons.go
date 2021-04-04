@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/big"
+	"strings"
 )
 
 //go:generate stringer -type Type
@@ -15,15 +16,6 @@ const (
 	Proc
 	Pair
 	Closure
-	Continuation
-	Foreign
-	Character
-	Port
-	Vector
-	Macro
-	Promise
-	Environment
-	LastSystemType
 )
 
 type ConsList []Cons
@@ -39,14 +31,24 @@ func (cs Cons) String() string {
 	switch cs.Type {
 	case Number:
 		return fmt.Sprint(cs.Number)
-	case Pair:
-		return fmt.Sprint(cs.List)
+	case Pair, Closure:
+		return cs.ListToString()
 	default:
 		return cs.Value
 	}
 
 }
+func (cs Cons) ListToString() string {
+	var out strings.Builder
 
+	out.WriteString("( ")
+	for _, cons := range cs.List {
+		out.WriteString(cons.String() + " ")
+
+	}
+	out.WriteString(")")
+	return out.String()
+}
 func NewSymbol(value string) Cons {
 	return Cons{Type: Symbol, Value: value}
 }

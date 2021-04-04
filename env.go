@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 )
 
 type Env struct {
@@ -56,10 +57,12 @@ func subtract(list ConsList) Cons {
 }
 
 func multiply(list ConsList) Cons {
-	acc := list[0].Number
-	for i := 1; i < len(list); i++ {
+	fmt.Println("multiply#start", list)
+	acc := big.NewInt(1)
+	for i := 0; i < len(list); i++ {
 		acc.Mul(acc, list[i].Number)
 	}
+	fmt.Println("multiply#out", acc)
 	return NewNumber(acc)
 }
 func divide(list ConsList) Cons {
@@ -82,8 +85,8 @@ func greaterThan(list ConsList) Cons {
 }
 
 func car(argv ConsList) Cons {
-	fmt.Println(argv)
-	return argv[0].List[0]
+	out := argv[0].List[0]
+	return out
 }
 
 func cdr(argv ConsList) Cons {
@@ -98,6 +101,39 @@ func sqrt(argv ConsList) Cons {
 	return NewNumber(argv[0].Number.Sqrt(argv[0].Number))
 }
 
+// append: take quoted arguments and combine them into a list
+func appendFn(argv ConsList) Cons {
+	fmt.Println("append ", argv)
+
+	l := make(ConsList, 0)
+	for _, entries := range argv {
+		l = append(l, entries.List...)
+	}
+	out := NewList(l)
+	fmt.Println("append out", out)
+	return out
+}
+
+func apply(args ConsList) Cons {
+	// (apply + '(1 2 3 4))
+	fmt.Printf("apply %#v\n", args)
+	return args[0].Proc(args[1].List)
+}
+
+func mapFn(argv ConsList) Cons {
+	fmt.Printf("map %+v\n", argv)
+	lst := make(ConsList, 0)
+	lst = append(lst, argv[0])
+	for _, x := range argv[1].List {
+
+		fmt.Printf("%+v\n", x)
+		lst = append(lst, x)
+	}
+
+	fmt.Printf("map %+v\n", lst)
+	return apply(lst)
+
+}
 func modulo(argv ConsList) Cons {
 	// modulo _ _ -> NewNumber
 	if len(argv) == 2 {
@@ -125,6 +161,9 @@ func standardEnvironment() *Env {
 	env.Add("#t", NewSymbol("#t"))
 	env.Add("nil", NewSymbol("nil"))
 	env.Add("sqrt", NewProc(sqrt))
+	env.Add("append", NewProc(appendFn))
+	env.Add("apply", NewProc(apply))
+	// env.Add("map", NewProc(mapFn))
 
 	return env
 }

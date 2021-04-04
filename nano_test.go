@@ -33,7 +33,7 @@ func TestNanoCompose(t *testing.T) {
 		{"()"},
 		{"('(1 2 3 4 5))"},
 	}
-	c := NanoCompose(verifyParenthesis, translateQuote)
+	c := NanoCompose(verifyParenthesis)
 	for _, test := range tests {
 		fmt.Println(c(test.input))
 	}

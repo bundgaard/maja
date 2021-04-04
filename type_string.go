@@ -14,20 +14,11 @@ func _() {
 	_ = x[Proc-3]
 	_ = x[Pair-4]
 	_ = x[Closure-5]
-	_ = x[Continuation-6]
-	_ = x[Foreign-7]
-	_ = x[Character-8]
-	_ = x[Port-9]
-	_ = x[Vector-10]
-	_ = x[Macro-11]
-	_ = x[Promise-12]
-	_ = x[Environment-13]
-	_ = x[LastSystemType-14]
 }
 
-const _Type_name = "StringNumberSymbolProcPairClosureContinuationForeignCharacterPortVectorMacroPromiseEnvironmentLastSystemType"
+const _Type_name = "StringNumberSymbolProcPairClosure"
 
-var _Type_index = [...]uint8{0, 6, 12, 18, 22, 26, 33, 45, 52, 61, 65, 71, 76, 83, 94, 108}
+var _Type_index = [...]uint8{0, 6, 12, 18, 22, 26, 33}
 
 func (i Type) String() string {
 	if i < 0 || i >= Type(len(_Type_index)-1) {
