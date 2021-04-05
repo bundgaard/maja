@@ -31,9 +31,9 @@ func (cs Cons) String() string {
 	switch cs.Type {
 	case Number:
 		return fmt.Sprint(cs.Number)
-	case Pair, Closure:
+	case Pair:
 		return cs.ListToString()
-	case Proc:
+	case Proc, Closure:
 		return cs.Type.String()
 	default:
 		return cs.Value
@@ -50,6 +50,9 @@ func (cs Cons) ListToString() string {
 	}
 	out.WriteString(")")
 	return out.String()
+}
+func NewString(value string) Cons {
+	return Cons{Type: String, Value: value}
 }
 func NewSymbol(value string) Cons {
 	return Cons{Type: Symbol, Value: value}

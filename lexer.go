@@ -7,11 +7,12 @@ import (
 )
 
 type Lexer struct {
-	data      string
-	ch        rune
-	peek      rune
-	index     int
-	nextIndex int
+	data        string
+	ch          rune
+	peek        rune
+	index       int
+	nextIndex   int
+	hasVertical bool
 }
 
 func (l *Lexer) readChar() {
@@ -50,8 +51,6 @@ func (l *Lexer) NextToken() string {
 	case '(':
 		out = string(l.ch)
 	case ')':
-		out = string(l.ch)
-	case '+', '-', '*', '/':
 		out = string(l.ch)
 	case '#':
 		out = l.readHash()
@@ -111,13 +110,27 @@ func (l *Lexer) readNumber() string {
 func (l *Lexer) readIdentifier() string {
 	index := l.index
 
-	for isLetter(l.ch) ||
+	if l.ch == rune('|') {
+		l.hasVertical = true
+	}
+	l.readChar() // '|'
+	for isLetter(l.ch) || isDigit(l.ch) ||
 		unicode.IsSymbol(l.ch) ||
 		l.ch == rune('!') ||
+		l.ch == rune('.') ||
+		l.ch == rune('+') ||
 		l.ch == rune('-') ||
+		l.ch == rune('*') ||
+		l.ch == rune('/') ||
+		(l.hasVertical && unicode.IsSpace(l.ch)) ||
+		l.ch == rune(';') ||
 		l.ch == rune('?') {
+		if l.ch == rune('|') {
+			l.hasVertical = false
+		}
 		l.readChar()
 	}
+
 	token := l.data[index:l.index]
 	return token
 }
@@ -130,5 +143,6 @@ func isSpace(ch rune) bool {
 	return unicode.IsSpace(ch) //  == ' ' || ch == '\r' || ch == '\n' || ch == '\t'
 }
 func isLetter(ch rune) bool {
-	return unicode.IsLetter(ch) || unicode.IsSymbol(ch) //return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
+	return unicode.IsLetter(ch) ||
+		unicode.IsSymbol(ch) || ch == rune('-') || ch == rune('.') //return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
 }

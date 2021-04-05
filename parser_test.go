@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 )
 
@@ -9,57 +10,50 @@ func TestQuote(t *testing.T) {
 	tests := []struct {
 		input string
 
-		expected string
+		expected Cons
 	}{
-		{"'(1 2 3)", "'(1 2 3)"},
+		{"(1 2 3)", Cons{
+			List: ConsList{
+				NewNumber(big.NewInt(1)),
+				NewNumber(big.NewInt(2)),
+				NewNumber(big.NewInt(3)),
+			},
+		},
+		}, // end of (1 2 3)
+
+		{`(if (< 1 2) "true" "false")`, Cons{List: ConsList{
+			NewSymbol("if"),
+			NewList(ConsList{NewSymbol("<"), NewNumber(big.NewInt(1)), NewNumber(big.NewInt((2)))}),
+			NewString("true"),
+			NewString("false"),
+		}}}, // end of (if (< 1 2) "true" "false")
+
+		{`(define r 10)`, Cons{
+			List: ConsList{
+				NewSymbol("define"), NewSymbol("r"), NewNumber(big.NewInt(10)),
+			}}}, // end of (define r 10)
+
+		{`(begin (define r 10) (+ r r))`, Cons{List: ConsList{
+			NewSymbol("begin"),
+			NewList(ConsList{NewSymbol("define"), NewSymbol("r"), NewNumber(big.NewInt(10))}), // (define r 10)
+			NewList(ConsList{NewSymbol("+"), NewSymbol("r"), NewSymbol("r")}),                 // (+ r r)
+		}}}, // end of (begin (define r 10) (+ r r))
 	}
 
-	for _, test := range tests {
+	for idx, test := range tests {
 		l := NewLexer(test.input)
 		p := NewParser(l)
 
-		cons := p.Parse()
+		got := p.Parse()
+		fmt.Printf("%#v\n", got)
+		if len(got.List) != len(test.expected.List) {
+			t.Errorf("test[%02d] len -- expected=%d. got=%d", idx, len(test.expected.List), len(got.List))
+		}
 
-		fmt.Println(cons)
-	}
-}
+		if got.List[0].Type != test.expected.List[0].Type {
+			t.Errorf("test[%02d] -- expected=%q. got=%q", idx, test.expected.Type, got.Type)
+		}
 
-func TestParse(t *testing.T) {
-
-	input := `(define r 10)`
-	l := NewLexer(input)
-	p := NewParser(l)
-
-	cons := p.Parse()
-	if cons.Type != Pair {
-		t.Errorf("expected %q. got=%q", Pair, cons.Type)
-	}
-
-	if len(cons.List) != 3 {
-		t.Errorf("expexted length %d. got %d", 3, len(cons.List))
-	}
-
-	if cons.List[0].Type != Symbol {
-		t.Errorf("expected %q. got=%q", Symbol, cons.List[0].Type)
-	}
-	if cons.List[1].Type != Symbol {
-		t.Errorf("expected %q. got=%q", Symbol, cons.List[1].Type)
-	}
-
-	if cons.List[2].Type != Number {
-		t.Errorf("expected %q. got=%q", Number, cons.List[2].Type)
-	}
-}
-
-func TestParseWithBegin(t *testing.T) {
-	input := `(begin (define r 10) (+ r r))`
-	expected := "[begin [define r 10] [+ r r]]"
-	l := NewLexer(input)
-	p := NewParser(l)
-
-	cons := p.Parse()
-	if expected != cons.String() {
-		t.Fatal()
 	}
 }
 

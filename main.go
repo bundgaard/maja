@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"runtime"
@@ -12,21 +13,6 @@ import (
 func evaluate(cons Cons, env *Env) (Cons, error) {
 
 	switch cons.Type {
-	case Symbol:
-		if cons.Value[0] == '"' {
-			return NewSymbol(cons.Value[1 : len(cons.Value)-1]), nil
-		}
-		env, err := env.Find(cons.Value)
-		if err != nil {
-			return Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
-		}
-		fn, ok := env[cons.Value]
-		if !ok {
-			return Cons{}, fmt.Errorf("'%s' not found in environment", cons)
-		}
-		return fn, nil
-	case Number:
-		return cons, nil
 	case Pair:
 		if len(cons.List) < 1 {
 			return cons, nil
@@ -102,6 +88,7 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 				}
 				return arg2, nil
 			}
+
 		default:
 			// found proc +/-,
 			// log.Println("found proc", cons.List, cons.Value, cons.Number, cons.Type.String())
@@ -131,6 +118,21 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			}
 
 		}
+	case Symbol:
+		if cons.Value[0] == '"' {
+			return NewString(cons.Value), nil
+		}
+		env, err := env.Find(cons.Value)
+		if err != nil {
+			return Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
+		}
+		fn, ok := env[cons.Value]
+		if !ok {
+			return Cons{}, fmt.Errorf("'%s' not found in environment", cons)
+		}
+		return fn, nil
+	case Number:
+		return cons, nil
 	}
 	return Cons{}, nil
 }
@@ -158,6 +160,19 @@ func main() {
 				(fib (- n 2)) 
 			))))`
 	insertInto(env, cubeInput, fibInput)
+
+	out, err := evaluate(Cons{List: ConsList{
+		NewSymbol("begin"),
+		NewList(ConsList{NewSymbol("define"), NewSymbol("r"), NewNumber(big.NewInt(10))}), // (define r 10)
+		NewList(ConsList{NewSymbol("+"), NewSymbol("r"), NewSymbol("r")}),                 // (+ r r)
+	}}, env)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%#v\n", out)
+	os.Exit(1)
+
 	for {
 
 		fmt.Print(Prompt)

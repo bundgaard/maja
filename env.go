@@ -77,6 +77,9 @@ func equalNumeric(argv ConsList) Cons {
 	for i := 0; i < len(argv)-1; i++ {
 		current := argv[i]
 		next := argv[i+1]
+		if current.Type != Number || next.Type != Number {
+			return out
+		}
 		cmp := current.Number.Cmp(next.Number)
 		if cmp == 0 {
 			out = NewSymbol("#t")
@@ -92,6 +95,9 @@ func lessThan(argv ConsList) Cons {
 	for i := 0; i < len(argv)-1; i++ {
 		current := argv[i]
 		next := argv[i+1]
+		if current.Type != Number || next.Type != Number {
+			return out
+		}
 		cmp := current.Number.Cmp(next.Number)
 		if cmp == -1 {
 			out = NewSymbol("#t")
@@ -107,6 +113,9 @@ func greaterThan(argv ConsList) Cons {
 	for i := 0; i < len(argv)-1; i++ {
 		current := argv[i]
 		next := argv[i+1]
+		if current.Type != Number || next.Type != Number {
+			return out
+		}
 		cmp := current.Number.Cmp(next.Number)
 		if cmp == 1 {
 			out = NewSymbol("#t")
@@ -118,7 +127,7 @@ func greaterThan(argv ConsList) Cons {
 }
 
 func car(argv ConsList) Cons {
-	out := argv[0].List[0]
+	out := argv[0]
 	return out
 }
 
@@ -160,7 +169,15 @@ func modulo(argv ConsList) Cons {
 }
 
 func isNumber(argv ConsList) Cons {
-	if argv[0].Type == Number {
+	if car(argv).Type == Number {
+		return NewSymbol("#t")
+	}
+	return NewSymbol("#f")
+}
+
+func isString(args ConsList) Cons {
+
+	if car(args).Type == String {
 		return NewSymbol("#t")
 	}
 	return NewSymbol("#f")
@@ -188,7 +205,8 @@ func standardEnvironment() *Env {
 	env.Add("sqrt", NewProc(sqrt))
 	env.Add("append", NewProc(appendFn))
 	env.Add("apply", NewProc(apply))
-	env.Add("is-number?", NewProc(isNumber))
+	env.Add("number?", NewProc(isNumber))
+	env.Add("string?", NewProc(isString))
 	//	env.Add("map", NewProc(mapFn))
 
 	return env
