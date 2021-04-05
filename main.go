@@ -3,14 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"math/big"
 	"os"
 	"runtime"
 	"strings"
 )
 
-func evaluate(cons Cons, env *Env) (Cons, error) {
+func evaluate(cons Cons, env Env) (Cons, error) {
 
 	switch cons.Type {
 	case Pair:
@@ -99,28 +98,39 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			xs := args(cons)
 			for i := range xs {
 				value, err := evaluate(xs[i], env)
+				fmt.Println("> xs ", xs, xs[i])
 				if err != nil {
 					return NewSymbol("error"), err
 				}
 				xs[i] = value
+				fmt.Println(">> xs ", xs, xs[i])
 			}
 			if proc.Type == Closure {
-				newEnv := NewEnvironment(env)
+				fmt.Printf("Closure %+v\n", proc)
+				newEnv := NewEnvironment(&env)
 				for idx, symbol := range proc.List[1].List {
+					fmt.Println("add to new env", symbol, xs[idx])
 					newEnv.Add(symbol.Value, xs[idx])
 				}
 				out, err := evaluate(proc.List[2], newEnv)
+				fmt.Println("Closure", out)
 				return out, err
 			} else if proc.Type == Proc && len(xs) > 0 {
 				return proc.Proc(xs), nil
 			} else {
 				fmt.Println("nothing to execute", cons)
+				return Cons{}, fmt.Errorf("nothing to execute")
 			}
 
 		}
+	case String:
+		fmt.Printf("string %+v\n", cons)
+
+		return NewString(cons.Value), nil
+
 	case Symbol:
 		if cons.Value[0] == '"' {
-			return NewString(cons.Value), nil
+			return cons, nil
 		}
 		env, err := env.Find(cons.Value)
 		if err != nil {
@@ -137,7 +147,7 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 	return Cons{}, nil
 }
 
-func insertInto(env *Env, input ...string) {
+func insertInto(env Env, input ...string) {
 	for _, line := range input {
 		l := NewLexer(line)
 		p := NewParser(l)
@@ -159,19 +169,12 @@ func main() {
 			(+ (fib (- n 1))
 				(fib (- n 2)) 
 			))))`
-	insertInto(env, cubeInput, fibInput)
-
-	out, err := evaluate(Cons{List: ConsList{
-		NewSymbol("begin"),
-		NewList(ConsList{NewSymbol("define"), NewSymbol("r"), NewNumber(big.NewInt(10))}), // (define r 10)
-		NewList(ConsList{NewSymbol("+"), NewSymbol("r"), NewSymbol("r")}),                 // (+ r r)
-	}}, env)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%#v\n", out)
-	os.Exit(1)
+	factorial := `(define factorial (lambda 
+			(n)
+			(if 
+				(= 0 n) 1 
+				(* n (factorial (- n 1))))))`
+	insertInto(env, cubeInput, fibInput, factorial)
 
 	for {
 

@@ -37,7 +37,7 @@ func NewLexer(data string) *Lexer {
 }
 
 func (l *Lexer) skipSpace() {
-	for isSpace(l.ch) {
+	for unicode.IsSpace(l.ch) {
 		l.readChar()
 	}
 }
@@ -66,7 +66,7 @@ func (l *Lexer) NextToken() string {
 		} else if isLetter(l.ch) {
 			out = l.readIdentifier()
 			return out
-		} else if isDigit(l.ch) {
+		} else if unicode.IsDigit(l.ch) {
 			out = l.readNumber()
 			return out
 		} else {
@@ -102,7 +102,7 @@ func (l *Lexer) readString() string {
 
 func (l *Lexer) readNumber() string {
 	index := l.index
-	for isDigit(l.ch) {
+	for unicode.IsDigit(l.ch) {
 		l.readChar()
 	}
 	return l.data[index:l.index]
@@ -114,7 +114,7 @@ func (l *Lexer) readIdentifier() string {
 		l.hasVertical = true
 	}
 	l.readChar() // '|'
-	for isLetter(l.ch) || isDigit(l.ch) ||
+	for isLetter(l.ch) || unicode.IsDigit(l.ch) ||
 		unicode.IsSymbol(l.ch) ||
 		l.ch == rune('!') ||
 		l.ch == rune('.') ||
@@ -135,14 +135,11 @@ func (l *Lexer) readIdentifier() string {
 	return token
 }
 
-func isDigit(ch rune) bool {
-	return unicode.IsDigit(ch) // return '0' <= ch && ch <= '9'
-}
-
-func isSpace(ch rune) bool {
-	return unicode.IsSpace(ch) //  == ' ' || ch == '\r' || ch == '\n' || ch == '\t'
-}
 func isLetter(ch rune) bool {
 	return unicode.IsLetter(ch) ||
-		unicode.IsSymbol(ch) || ch == rune('-') || ch == rune('.') //return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
+		unicode.IsSymbol(ch) ||
+		ch == rune('-') ||
+		ch == rune('*') ||
+		ch == rune('/') ||
+		ch == rune('.')
 }

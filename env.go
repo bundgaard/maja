@@ -10,10 +10,10 @@ type Env struct {
 	Outer       *Env
 }
 
-func NewEnvironment(outerEnv *Env) *Env {
+func NewEnvironment(outerEnv *Env) Env {
 	m := make(map[string]Cons)
 	e := Env{Environment: m, Outer: outerEnv}
-	return &e
+	return e
 }
 
 func (e *Env) Add(symbol string, item Cons) {
@@ -29,6 +29,7 @@ func (e errUnbound) Error() string {
 }
 
 func (e *Env) Find(symbol string) (map[string]Cons, error) {
+	fmt.Println("env#Find ", symbol, e)
 	for ks := range e.Environment {
 		if ks == symbol {
 			return e.Environment, nil
@@ -182,7 +183,7 @@ func isString(args ConsList) Cons {
 	}
 	return NewSymbol("#f")
 }
-func standardEnvironment() *Env {
+func standardEnvironment() Env {
 	env := NewEnvironment(nil)
 	env.Add("+", NewProc(add))
 

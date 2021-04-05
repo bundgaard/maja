@@ -27,6 +27,8 @@ type Cons struct {
 	Proc   func(ConsList) Cons
 }
 
+
+
 func (cs Cons) String() string {
 	switch cs.Type {
 	case Number:
@@ -35,6 +37,8 @@ func (cs Cons) String() string {
 		return cs.ListToString()
 	case Proc, Closure:
 		return cs.Type.String()
+	case String:
+		return fmt.Sprintf("\"%s\"", cs.Value)
 	default:
 		return cs.Value
 	}
@@ -43,9 +47,12 @@ func (cs Cons) String() string {
 func (cs Cons) ListToString() string {
 	var out strings.Builder
 
-	out.WriteString("( ")
-	for _, cons := range cs.List {
-		out.WriteString(cons.String() + " ")
+	out.WriteString("(")
+	for i, cons := range cs.List {
+		if i > 0 && i < len(cs.List) {
+			out.WriteString(" ")
+		}
+		out.WriteString(cons.String())
 
 	}
 	out.WriteString(")")
