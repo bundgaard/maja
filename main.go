@@ -81,12 +81,7 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			}
 			return Cons{}, nil
 		case "if":
-			/* return evaluate(s.getList()[1],env).val()=="#t" ?
-			evaluate(s.getList()[2],env) :
-				(s.getList()[3].val() == "else" ?
-					evaluate(s.getList()[4],env) :
-						SList());
-			*/
+			// if predicate true false
 			arg1, err := evaluate(cons.List[1], env)
 			if err != nil {
 				fmt.Println("error: if", err)
@@ -95,15 +90,17 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 			if arg1.Value == "#t" {
 				arg2, err := evaluate(cons.List[2], env)
 				if err != nil {
-					fmt.Println("error: if true", err)
+					return Cons{}, err
 
 				}
-				fmt.Println("arg2", arg2)
-
+				return arg2, nil
 			} else {
-				return Cons{}, nil
+				arg2, err := evaluate(cons.List[3], env)
+				if err != nil {
+					return Cons{}, err
+				}
+				return arg2, nil
 			}
-
 		default:
 			// found proc +/-,
 			// log.Println("found proc", cons.List, cons.Value, cons.Number, cons.Type.String())

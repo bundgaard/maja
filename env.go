@@ -71,15 +71,50 @@ func divide(list ConsList) Cons {
 	return NewNumber(acc)
 }
 
-func equal(list ConsList) Cons {
-	return NewSymbol("#f")
+func equalNumeric(argv ConsList) Cons {
+	// = [argv . argv]
+	out := NewSymbol("#f")
+	for i := 0; i < len(argv)-1; i++ {
+		current := argv[i]
+		next := argv[i+1]
+		cmp := current.Number.Cmp(next.Number)
+		if cmp == 0 {
+			out = NewSymbol("#t")
+		} else {
+			out = NewSymbol("#f")
+		}
+	}
+	return out
 }
 
-func lessThan(list ConsList) Cons {
-	return NewSymbol("#f")
+func lessThan(argv ConsList) Cons {
+	out := NewSymbol("#f")
+	for i := 0; i < len(argv)-1; i++ {
+		current := argv[i]
+		next := argv[i+1]
+		cmp := current.Number.Cmp(next.Number)
+		if cmp == -1 {
+			out = NewSymbol("#t")
+		} else {
+			out = NewSymbol("#f")
+		}
+	}
+
+	return out
 }
-func greaterThan(list ConsList) Cons {
-	return NewSymbol("#f")
+func greaterThan(argv ConsList) Cons {
+	out := NewSymbol("#f")
+	for i := 0; i < len(argv)-1; i++ {
+		current := argv[i]
+		next := argv[i+1]
+		cmp := current.Number.Cmp(next.Number)
+		if cmp == 1 {
+			out = NewSymbol("#t")
+		} else {
+			out = NewSymbol("#f")
+		}
+	}
+	return out
 }
 
 func car(argv ConsList) Cons {
@@ -123,6 +158,13 @@ func modulo(argv ConsList) Cons {
 	}
 	return NewSymbol("unexpected number of arguments")
 }
+
+func isNumber(argv ConsList) Cons {
+	if argv[0].Type == Number {
+		return NewSymbol("#t")
+	}
+	return NewSymbol("#f")
+}
 func standardEnvironment() *Env {
 	env := NewEnvironment(nil)
 	env.Add("+", NewProc(add))
@@ -136,7 +178,8 @@ func standardEnvironment() *Env {
 
 	env.Add("<", NewProc(lessThan))
 	env.Add(">", NewProc(greaterThan))
-	env.Add("=", NewProc(equal))
+	env.Add("=", NewProc(equalNumeric))
+
 	env.Add("car", NewProc(car))
 	env.Add("cdr", NewProc(cdr))
 	env.Add("#f", NewSymbol("#f"))
@@ -145,6 +188,7 @@ func standardEnvironment() *Env {
 	env.Add("sqrt", NewProc(sqrt))
 	env.Add("append", NewProc(appendFn))
 	env.Add("apply", NewProc(apply))
+	env.Add("is-number?", NewProc(isNumber))
 	//	env.Add("map", NewProc(mapFn))
 
 	return env
