@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -133,15 +134,30 @@ func evaluate(cons Cons, env *Env) (Cons, error) {
 	}
 	return Cons{}, nil
 }
+
+func insertInto(env *Env, input ...string) {
+	for _, line := range input {
+		l := NewLexer(line)
+		p := NewParser(l)
+		evaluate(p.Parse(), env)
+	}
+}
 func main() {
 	env := standardEnvironment()
 	scanner := bufio.NewScanner(os.Stdin)
 	Prompt := "λ -> "
 
-	cubeInput := `(define cube (lambda (x) (* x x x)))`
-	l := NewLexer(cubeInput)
-	p := NewParser(l)
-	evaluate(p.Parse(), env)
+	cubeInput := `(define cube (lambda 
+		(x) 
+		(* x x x)))`
+	fibInput := `(define fib (lambda 
+		(n) (if 
+			(< n 2) 
+			n
+			(+ (fib (- n 1))
+				(fib (- n 2)) 
+			))))`
+	insertInto(env, cubeInput, fibInput)
 	for {
 
 		fmt.Print(Prompt)
@@ -188,6 +204,15 @@ func main() {
 						},
 					})
 				}
+				continue
+			case "?mem":
+				ms := runtime.MemStats{}
+				runtime.ReadMemStats(&ms)
+				fmt.Println("Alloc", ms.Alloc/1024/1024, "MiB")
+				fmt.Println("Total alloc", ms.TotalAlloc/1024/1024, "MiB")
+
+				fmt.Println("Sys", ms.Sys/1024/1024, "MiB")
+				fmt.Println("NumGC", ms.NumGC)
 				continue
 			case "?exit":
 				fmt.Fprintf(os.Stderr, "Goodbye\n")
