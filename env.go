@@ -42,16 +42,18 @@ func (e *Env) Find(symbol string) (map[string]Cons, error) {
 	}
 }
 func add(list ConsList) Cons {
-	acc := list[0].Number
-	for i := 1; i < len(list); i++ {
+	fmt.Printf("add %+v\n", list)
+	acc := big.NewInt(0)
+	for i := 0; i < len(list); i++ {
 		acc.Add(acc, list[i].Number)
 	}
 	return NewNumber(acc)
 }
 
 func subtract(list ConsList) Cons {
-	acc := list[0].Number
-	for i := 1; i < len(list); i++ {
+	acc := big.NewInt(0)
+
+	for i := 0; i < len(list); i++ {
 		acc.Sub(acc, list[i].Number)
 	}
 	return NewNumber(acc)
@@ -65,8 +67,8 @@ func multiply(list ConsList) Cons {
 	return NewNumber(acc)
 }
 func divide(list ConsList) Cons {
-	acc := list[0].Number
-	for i := 1; i < len(list); i++ {
+	acc := big.NewInt(1)
+	for i := 0; i < len(list); i++ {
 		acc.Div(acc, list[i].Number)
 	}
 	return NewNumber(acc)
@@ -210,5 +212,18 @@ func standardEnvironment() Env {
 	env.Add("string?", NewProc(isString))
 	//	env.Add("map", NewProc(mapFn))
 
+	/// disjointess
+	/*
+		boolean?
+		symbol?
+		char?
+		vector?
+		procedure?
+		pair?
+		number?
+		string?
+		port?
+
+	*/
 	return env
 }

@@ -38,6 +38,10 @@ func (p *Parser) parseList() Cons {
 func (p *Parser) Parse() Cons {
 	var cons Cons
 	token := p.current
+	for token == "COMMENT" {
+		p.nextToken()
+		token = p.current
+	}
 	for token != "EOF" {
 		switch token {
 		case "(":
@@ -52,7 +56,6 @@ func (p *Parser) Parse() Cons {
 				return NewSymbol(token)
 			}
 			return NewNumber(big.NewInt(n))
-
 		}
 
 	}
@@ -64,7 +67,7 @@ func (p *Parser) parseQuote() Cons {
 	p.nextToken() // eat '
 	token := p.Parse()
 	l := make(ConsList, 0)
-	l = append(l, NewSymbol("'"), token)
+	l = append(l, NewSymbol("quote"), token)
 	out := NewList(l)
 	return out
 }
