@@ -3,16 +3,19 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"maja/pkg/ast"
+	"maja/pkg/parser"
+	lexer "maja/pkg/scanner"
 	"math/big"
 	"os"
 	"runtime"
 	"strings"
 )
 
-func evaluate(cons Cons, env Env) (Cons, error) {
+func evaluate(cons ast.Cons, env Env) (ast.Cons, error) {
 
 	switch cons.Type {
-	case Pair:
+	case ast.Pair:
 		if len(cons.List) < 1 {
 			return cons, nil
 		}
@@ -22,31 +25,31 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 			fn := cons.List[1]
 			args := cons.List[2:]
 
-			result := make(ConsList, 0)
+			result := make(ast.ConsList, 0)
 			dummy, _ := evaluate(args[0], env)
 			for i := range dummy.List {
-				l := make(ConsList, len(dummy.List)+1) // +1 for the proc
+				l := make(ast.ConsList, len(dummy.List)+1) // +1 for the proc
 				l[0] = fn
 				for j := range args {
 					argv, _ := evaluate(args[j], env)
 					cell := argv.List[i]
 					l[j+1] = cell
 				}
-				cell, err := evaluate(NewList(l), env)
+				cell, err := evaluate(ast.NewList(l), env)
 				if err != nil {
-					return Cons{}, err
+					return ast.Cons{}, err
 				}
 				result = append(result, cell)
 			}
 
-			return NewList(result), nil
+			return ast.NewList(result), nil
 
 		case "'", "quote":
 			return cons.List[1], nil
 		case "define":
 			value, err := evaluate(cons.List[2], env)
 			if err != nil {
-				return NewSymbol("error"), err
+				return ast.NewSymbol("error"), err
 			}
 			env.Environment[cons.List[1].Value] = value
 			return env.Environment[cons.List[1].Value], nil
@@ -57,33 +60,33 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 			}
 			return evaluate(cons.List[len(cons.List)-1], env)
 		case "lambda", "λ":
-			cons.Type = Closure
+			cons.Type = ast.Closure
 			return cons, nil
 		case "set!":
 			_, err := env.Find(cons.List[1].Value)
 			if err != nil {
 				fmt.Println(err)
-				return Cons{}, err
+				return ast.Cons{}, err
 			}
-			return Cons{}, nil
+			return ast.Cons{}, nil
 		case "if":
 			// if predicate true false
 			arg1, err := evaluate(cons.List[1], env)
 			if err != nil {
 				fmt.Println("error: if", err)
-				return Cons{}, err
+				return ast.Cons{}, err
 			}
 			if arg1.Value == "#t" {
 				arg2, err := evaluate(cons.List[2], env)
 				if err != nil {
-					return Cons{}, err
+					return ast.Cons{}, err
 
 				}
 				return arg2, nil
 			} else {
 				arg2, err := evaluate(cons.List[3], env)
 				if err != nil {
-					return Cons{}, err
+					return ast.Cons{}, err
 				}
 				return arg2, nil
 			}
@@ -93,19 +96,19 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 			// log.Println("found proc", cons.List, cons.Value, cons.Number, cons.Type.String())
 			proc, err := evaluate(cons.List[0], env)
 			if err != nil {
-				return NewSymbol("error"), err
+				return ast.NewSymbol("error"), err
 			}
-			xs := args(cons)
+			xs := ast.Arguments(cons)
 			for i := range xs {
 				value, err := evaluate(xs[i], env)
 				fmt.Println("> xs ", xs, xs[i])
 				if err != nil {
-					return NewSymbol("error"), err
+					return ast.NewSymbol("error"), err
 				}
 				xs[i] = value
 				fmt.Println(">> xs ", xs, xs[i])
 			}
-			if proc.Type == Closure {
+			if proc.Type == ast.Closure {
 				fmt.Printf("Closure %+v\n", proc)
 				newEnv := NewEnvironment(&env)
 				for idx, symbol := range proc.List[1].List {
@@ -115,42 +118,42 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 				out, err := evaluate(proc.List[2], newEnv)
 				fmt.Println("Closure", out)
 				return out, err
-			} else if proc.Type == Proc && len(xs) > 0 {
+			} else if proc.Type == ast.Proc && len(xs) > 0 {
 				return proc.Proc(xs), nil
 			} else {
 				fmt.Println("nothing to execute", cons)
-				return Cons{}, fmt.Errorf("nothing to execute")
+				return ast.Cons{}, fmt.Errorf("nothing to execute")
 			}
 
 		}
-	case String:
+	case ast.String:
 		fmt.Printf("string %+v\n", cons)
 
-		return NewString(cons.Value), nil
+		return ast.NewString(cons.Value), nil
 
-	case Symbol:
+	case ast.Symbol:
 		if cons.Value[0] == '"' {
 			return cons, nil
 		}
 		env, err := env.Find(cons.Value)
 		if err != nil {
-			return Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
+			return ast.Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
 		}
 		fn, ok := env[cons.Value]
 		if !ok {
-			return Cons{}, fmt.Errorf("'%s' not found in environment", cons)
+			return ast.Cons{}, fmt.Errorf("'%s' not found in environment", cons)
 		}
 		return fn, nil
-	case Number:
+	case ast.Number:
 		return cons, nil
 	}
-	return Cons{}, nil
+	return ast.Cons{}, nil
 }
 
 func insertInto(env Env, input ...string) {
 	for _, line := range input {
-		l := NewLexer(line)
-		p := NewParser(l)
+		l := lexer.NewLexer(line)
+		p := parser.NewParser(l)
 		evaluate(p.Parse(), env)
 	}
 }
@@ -207,17 +210,17 @@ func main() {
 					if !ok {
 						fmt.Fprintf(os.Stderr, "%s not found in environment", key)
 					}
-					fn.Proc(ConsList{
+					fn.Proc(ast.ConsList{
 						{
-							Type: Pair,
-							List: ConsList{
-								{Type: Number, Number: big.NewInt(10)},
+							Type: ast.Pair,
+							List: ast.ConsList{
+								{Type: ast.Number, Number: big.NewInt(10)},
 							},
 						},
 						{
-							Type: Pair,
-							List: ConsList{
-								{Type: Number, Number: big.NewInt(20)},
+							Type: ast.Pair,
+							List: ast.ConsList{
+								{Type: ast.Number, Number: big.NewInt(20)},
 							},
 						},
 					})
@@ -243,8 +246,8 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		l := NewLexer(line)
-		p := NewParser(l)
+		l := lexer.NewLexer(line)
+		p := parser.NewParser(l)
 		program := p.Parse()
 		output, err := evaluate(program, env)
 		if err != nil {

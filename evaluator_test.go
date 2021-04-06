@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"maja/pkg/ast"
 	"math/big"
 	"testing"
 )
@@ -9,28 +10,28 @@ import (
 func TestEvaluatorAst(t *testing.T) {
 
 	tests := []struct {
-		ast      Cons
-		expected Cons
+		ast      ast.Cons
+		expected ast.Cons
 	}{
-		{ast: NewList(ConsList{
-			NewSymbol("begin"),
-			NewList(ConsList{NewSymbol("define"), NewSymbol("r"), NewNumber(big.NewInt(10))}), // (define r 10)
-			NewList(ConsList{NewSymbol("+"), NewSymbol("r"), NewSymbol("r")}),                 // (+ r r)
-		}), expected: NewNumber(big.NewInt(20))},
+		{ast: ast.NewList(ast.ConsList{
+			ast.NewSymbol("begin"),
+			ast.NewList(ast.ConsList{ast.NewSymbol("define"), ast.NewSymbol("r"), ast.NewNumber(big.NewInt(10))}), // (define r 10)
+			ast.NewList(ast.ConsList{ast.NewSymbol("+"), ast.NewSymbol("r"), ast.NewSymbol("r")}),                 // (+ r r)
+		}), expected: ast.NewNumber(big.NewInt(20))},
 
-		{NewList(ConsList{}), NewList(ConsList{})},
-		{NewNumber(big.NewInt(10)), NewNumber(big.NewInt(10))},
+		{ast.NewList(ast.ConsList{}), ast.NewList(ast.ConsList{})},
+		{ast.NewNumber(big.NewInt(10)), ast.NewNumber(big.NewInt(10))},
 
 		// (if (= 10 20) "foo" "bar")
 		// ConsList
 		{
-			ast: NewList(ConsList{
-				NewSymbol("if"),
-				NewList(ConsList{NewSymbol("="), NewNumber(big.NewInt(10)), NewNumber(big.NewInt(20))}),
-				NewString("foo"), // #t
-				NewString("bar"), // #f
+			ast: ast.NewList(ast.ConsList{
+				ast.NewSymbol("if"),
+				ast.NewList(ast.ConsList{ast.NewSymbol("="), ast.NewNumber(big.NewInt(10)), ast.NewNumber(big.NewInt(20))}),
+				ast.NewString("foo"), // #t
+				ast.NewString("bar"), // #f
 			}),
-			expected: NewString("bar")},
+			expected: ast.NewString("bar")},
 	}
 
 	env := standardEnvironment()
@@ -42,15 +43,15 @@ func TestEvaluatorAst(t *testing.T) {
 		fmt.Printf("test[%02d] got %s %s\n", idx, got.Type.String(), got.String())
 		fmt.Printf("test[%02d] ast %s %s", idx, test.ast.Type.String(), test.ast.String())
 		switch got.Type {
-		case Number:
+		case ast.Number:
 			if got.Number.Cmp(test.expected.Number) != 0 {
 				t.Errorf("test[%02d] Number -- expected=%+v. got=%+v", idx, got, test.expected)
 			}
-		case String, Symbol:
+		case ast.String, ast.Symbol:
 			if got.Value != test.expected.Value {
 				t.Errorf("test[%02d] String -- expected=%+v. got=%+v", idx, got.Value, test.expected.Value)
 			}
-		case Pair:
+		case ast.Pair:
 			if len(got.List) != len(test.expected.List) {
 				t.Errorf("test[%02d] Pair -- expected=%+v. got=%+v", idx, len(got.List), len(test.expected.List))
 			}

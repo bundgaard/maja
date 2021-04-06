@@ -1,4 +1,4 @@
-package main
+package ast
 
 import (
 	"fmt"
@@ -26,8 +26,6 @@ type Cons struct {
 	List   ConsList
 	Proc   func(ConsList) Cons
 }
-
-
 
 func (cs Cons) String() string {
 	switch cs.Type {
@@ -74,7 +72,7 @@ func NewProc(fn func(ConsList) Cons) Cons {
 	return Cons{Type: Proc, Proc: fn}
 }
 
-func args(cons Cons) ConsList {
+func Arguments(cons Cons) ConsList {
 	unproc := cons.List
 	args := make(ConsList, 0)
 	for i := 1; i < len(unproc); i++ {

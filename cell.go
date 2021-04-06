@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"maja/pkg/ast"
 	"strings"
 )
 
 type Cell struct {
-	Tag   Type
+	Tag   ast.Type
 	First interface{}
 	Rest  interface{}
 }
@@ -33,9 +34,8 @@ func (c Cell) String() string {
 	return ""
 }
 func (c *Cell) stringifyPair(quoted bool, sb strings.Builder) {
-	
-}
 
+}
 
 func stringify(x interface{}, quoted bool, sb strings.Builder) {
 	if x == nil {
