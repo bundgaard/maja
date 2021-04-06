@@ -1,4 +1,4 @@
-package main
+package eval
 
 import (
 	"fmt"
@@ -29,19 +29,19 @@ func (e errUnbound) Error() string {
 	return fmt.Sprintf("unbound %s", e.Symbol)
 }
 
-func (e *Env) Find(symbol string) (map[string]ast.Cons, error) {
+func (e *Env) Find(symbol string) *ast.Cons {
 	fmt.Println("env#Find ", symbol, e)
-	for ks := range e.Environment {
-		if ks == symbol {
-			return e.Environment, nil
-		}
+	fn, ok := e.Environment[symbol]
+	if ok {
+		return &fn
 	}
 	if e.Outer == nil {
-		return nil, errUnbound{Symbol: symbol}
+		return nil
 	} else {
 		return e.Outer.Find(symbol)
 	}
 }
+
 func add(list ast.ConsList) ast.Cons {
 	fmt.Printf("add %+v\n", list)
 	acc := big.NewInt(0)
@@ -186,7 +186,7 @@ func isString(args ast.ConsList) ast.Cons {
 	}
 	return ast.NewSymbol("#f")
 }
-func standardEnvironment() Env {
+func StandardEnvironment() Env {
 	env := NewEnvironment(nil)
 	env.Add("+", ast.NewProc(add))
 

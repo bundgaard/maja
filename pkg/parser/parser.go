@@ -3,8 +3,8 @@ package parser
 import (
 	"maja/pkg/ast"
 	"maja/pkg/scanner"
-	"math/big"
-	"strconv"
+	"unicode"
+	"unicode/utf8"
 )
 
 type Parser struct {
@@ -41,45 +41,51 @@ func (p *Parser) parseList() ast.Cons {
 }
 
 func (p *Parser) Parse() ast.Cons {
-	var cons ast.Cons
 	token := p.current
-	for token == "COMMENT" {
-		p.nextToken()
-		token = p.current
-	}
-	for token != "EOF" {
-		switch token {
-		case "(":
-			cons = p.parseList()
-			return cons
-		case "'":
-			cons = p.parseQuote()
-			return cons
+	switch token {
+	case "EOF":
+		panic("unexpected EOF")
+	case "(":
+		cl := make(ast.ConsList, 0)
+		for {
+			p.nextToken()
+			token = p.current
 
-		default:
-			n, err := strconv.ParseInt(token, 0, 64)
-			if err != nil {
-				return ast.NewSymbol(token)
+			if token == ")" {
+				return ast.NewList(cl)
 			}
-			return ast.NewNumber(big.NewInt(n))
+			cl = append(cl, p.Parse())
+		}
+	case ")":
+		panic("unexpected )")
+	case "'":
+		p.nextToken() // eat quote
+		out := ast.NewSymbol("quote")
+		tokens := p.Parse()
+		cl := make(ast.ConsList, len(tokens.List)+1)
+		cl[0] = out
+		copy(cl[1:], tokens.List)
+		return ast.NewList(cl)
+	default:
+		chr, _ := utf8.DecodeRuneInString(token)
+		switch {
+		case unicode.IsDigit(chr):
+			return ast.NewNumber(token)
+		case chr == '"':
+			return ast.NewString(token)
+		default:
+			return ast.NewSymbol(token)
 		}
 
 	}
-
-	return cons
 }
+
 func (p *Parser) parseQuote() ast.Cons {
-	// '() -> Cons(List: Parse)
-	p.nextToken() // eat ' or quote
+	// '(args) --> (quote (args))
+	// (quote (args))
 	token := p.Parse()
 	l := make(ast.ConsList, 0)
-	l = append(l, ast.NewSymbol("quote"), token)
+	l = append(l, token)
 	out := ast.NewList(l)
 	return out
 }
-
-/*
- current = (, next = *, tokens = ( define r 10)
-parse ( -> parseList (, nextToken, append to list
-
-*/

@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"log"
 	"math/big"
 	"strings"
 )
@@ -16,6 +17,7 @@ const (
 	Proc
 	Pair
 	Closure
+	Error
 )
 
 type ConsList []Cons
@@ -27,6 +29,21 @@ type Cons struct {
 	Proc   func(ConsList) Cons
 }
 
+func createBigInt(value interface{}) *big.Int {
+	zero := big.NewInt(0)
+	switch x := value.(type) {
+	case string:
+		zero.SetString(x, 10)
+	case *big.Int:
+		return x
+	case int:
+		zero.SetInt64(int64(x))
+	default:
+		log.Fatalf("error: createBigInt unhandled type %T", x)
+	}
+	return zero
+}
+
 func (cs Cons) String() string {
 	switch cs.Type {
 	case Number:
@@ -36,7 +53,7 @@ func (cs Cons) String() string {
 	case Proc, Closure:
 		return cs.Type.String()
 	case String:
-		return fmt.Sprintf("\"%s\"", cs.Value)
+		return fmt.Sprintf("%s", cs.Value)
 	default:
 		return cs.Value
 	}
@@ -62,7 +79,8 @@ func NewString(value string) Cons {
 func NewSymbol(value string) Cons {
 	return Cons{Type: Symbol, Value: value}
 }
-func NewNumber(number *big.Int) Cons {
+func NewNumber(value interface{}) Cons {
+	number := createBigInt(value)
 	return Cons{Type: Number, Number: number}
 }
 func NewList(list []Cons) Cons {
@@ -71,7 +89,9 @@ func NewList(list []Cons) Cons {
 func NewProc(fn func(ConsList) Cons) Cons {
 	return Cons{Type: Proc, Proc: fn}
 }
-
+func NewError(err error) Cons {
+	return Cons{Type: Error, Value: fmt.Sprintf("%v", err)}
+}
 func Arguments(cons Cons) ConsList {
 	unproc := cons.List
 	args := make(ConsList, 0)

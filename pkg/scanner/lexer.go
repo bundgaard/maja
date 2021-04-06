@@ -62,7 +62,6 @@ func (l *Lexer) NextToken() string {
 		if l.ch == '"' {
 			out = l.readString()
 			return out
-
 		} else if isLetter(l.ch) {
 			out = l.readIdentifier()
 			return out
@@ -87,17 +86,14 @@ func (l *Lexer) readHash() string {
 }
 
 func (l *Lexer) readString() string {
-
-	l.readChar() // eat "
 	index := l.index
+	l.readChar() // eat "
 	for l.ch != '"' && l.ch != 0 {
 		l.readChar()
 	}
-	token := l.data[index:l.index]
-
 	l.readChar() // eat last "
-	return fmt.Sprintf("\"%s\"", token)
-
+	token := l.data[index:l.index]
+	return token
 }
 
 func (l *Lexer) readNumber() string {

@@ -1,10 +1,10 @@
-package main
+package eval
 
 import "testing"
 
 func TestAppend(t *testing.T) {
 
-	env := standardEnvironment()
+	env := StandardEnvironment()
 
 	_ = env
 

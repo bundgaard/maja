@@ -1,6 +1,8 @@
 package scanner
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestLexer(t *testing.T) {
 
@@ -22,13 +24,17 @@ func TestLexer(t *testing.T) {
 		{"|two\x20;words|", "|two\x20;words|"},
 		{"the-word-recursion-has-many-meanings", "the-word-recursion-has-many-meanings"},
 		{"let*", "let*"},
+		{"12", "12"},
+		{"123123123123123123123", "123123123123123123123"},
+		{`foo`, `foo`},
+		{`"baz"`, `"baz"`},
 	}
 
 	for idx, test := range tests {
 		l := NewLexer(test.input)
 		got := l.NextToken()
 		if got != test.expected {
-			t.Errorf("test[%02d] -- expected=%q. got=%q", idx, test.expected, got)
+			t.Errorf("test[%02d] -- expected=%s. got=%s", idx, test.expected, got)
 		}
 	}
 
