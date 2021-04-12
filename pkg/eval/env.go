@@ -11,13 +11,14 @@ type Env struct {
 	Outer       *Env
 }
 
-func NewEnvironment(outerEnv *Env) Env {
+func NewEnvironment(outerEnv Env) Env {
 	m := make(map[string]ast.Cons)
-	e := Env{Environment: m, Outer: outerEnv}
+	e := Env{Environment: m, Outer: &outerEnv}
 	return e
 }
 
 func (e *Env) Add(symbol string, item ast.Cons) {
+	fmt.Printf("Environment add %s %#v\n", symbol, item)
 	e.Environment[symbol] = item
 }
 
@@ -30,7 +31,7 @@ func (e errUnbound) Error() string {
 }
 
 func (e *Env) Find(symbol string) *ast.Cons {
-	fmt.Println("env#Find ", symbol, e)
+	fmt.Println("env#Find", symbol, e)
 	fn, ok := e.Environment[symbol]
 	if ok {
 		return &fn
@@ -52,9 +53,9 @@ func add(list ast.ConsList) ast.Cons {
 }
 
 func subtract(list ast.ConsList) ast.Cons {
-	acc := big.NewInt(0)
 
-	for i := 0; i < len(list); i++ {
+	acc := list[0].Number
+	for i := len(list) - 1; i >= 1; i-- {
 		acc.Sub(acc, list[i].Number)
 	}
 	return ast.NewNumber(acc)
@@ -187,7 +188,7 @@ func isString(args ast.ConsList) ast.Cons {
 	return ast.NewSymbol("#f")
 }
 func StandardEnvironment() Env {
-	env := NewEnvironment(nil)
+	env := NewEnvironment(Env{})
 	env.Add("+", ast.NewProc(add))
 
 	env.Add("+", ast.NewProc(add))

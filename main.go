@@ -38,8 +38,17 @@ func main() {
 	factorial := `(define factorial (lambda 
 			(n)
 			(if 
-				(= 0 n) 1 
+				(= 1 n) 1 
 				(* n (factorial (- n 1))))))`
+
+	ohInput := `(define oh 
+					(lambda (n) 
+							(if 
+								(= 0 n) 
+								"foo" 
+								(oh (- n 1)))))`
+
+	_ = ohInput
 	_, _, _ = cubeInput, fibInput, factorial
 	//insertInto(env, cubeInput, fibInput, factorial)
 

@@ -73,7 +73,7 @@ func TestEvaluatorAst(t *testing.T) {
 
 	env := StandardEnvironment()
 	for idx, test := range tests {
-		got, err := evaluate(test.ast, env)
+		got, err := myEval(test.ast, env)
 		if err != nil {
 			t.Fatal(err)
 		}

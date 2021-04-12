@@ -163,6 +163,10 @@ func testInput(t *testing.T) {
 		},
 		{`"foo"`, ast.NewString(`"foo"`)},
 		{`bar`, ast.NewSymbol("bar")},
+		{`(if (= 10 11) "foo" "bar")`, ast.NewList(ast.ConsList{
+			ast.NewSymbol("if"),
+			ast.NewList(ast.ConsList{}),
+			ast.NewString(`"foo"`), ast.NewString(`"bar"`)})},
 	}
 
 	for idx, test := range tests {
