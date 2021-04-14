@@ -50,7 +50,7 @@ func main() {
 
 	_ = ohInput
 	_, _, _ = cubeInput, fibInput, factorial
-	//insertInto(env, cubeInput, fibInput, factorial)
+	insertInto(env, cubeInput, fibInput, factorial, ohInput)
 
 	for {
 
@@ -103,7 +103,7 @@ func main() {
 				fmt.Println("NumGC", ms.NumGC)
 				continue
 			case "?exit":
-				fmt.Fprintf(os.Stderr, "Goodbye\n")
+				_, _ = fmt.Fprintf(os.Stderr, "Goodbye\n")
 				os.Exit(0)
 			}
 		}
