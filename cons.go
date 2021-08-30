@@ -18,18 +18,18 @@ const (
 	Closure
 )
 
-type ConsList []Cons
-type Cons struct {
+type ConsList []Expr
+type Expr struct {
 	Type   Type
 	Value  string
 	Number *big.Int
 	List   ConsList
-	Proc   func(ConsList) Cons
+	Proc   func(ConsList) Expr
 }
 
 
 
-func (cs Cons) String() string {
+func (cs Expr) String() string {
 	switch cs.Type {
 	case Number:
 		return fmt.Sprint(cs.Number)
@@ -44,7 +44,7 @@ func (cs Cons) String() string {
 	}
 
 }
-func (cs Cons) ListToString() string {
+func (cs Expr) ListToString() string {
 	var out strings.Builder
 
 	out.WriteString("(")
@@ -58,23 +58,23 @@ func (cs Cons) ListToString() string {
 	out.WriteString(")")
 	return out.String()
 }
-func NewString(value string) Cons {
-	return Cons{Type: String, Value: value}
+func NewString(value string) Expr {
+	return Expr{Type: String, Value: value}
 }
-func NewSymbol(value string) Cons {
-	return Cons{Type: Symbol, Value: value}
+func NewSymbol(value string) Expr {
+	return Expr{Type: Symbol, Value: value}
 }
-func NewNumber(number *big.Int) Cons {
-	return Cons{Type: Number, Number: number}
+func NewNumber(number *big.Int) Expr {
+	return Expr{Type: Number, Number: number}
 }
-func NewList(list []Cons) Cons {
-	return Cons{Type: Pair, List: list}
+func NewList(list []Expr) Expr {
+	return Expr{Type: Pair, List: list}
 }
-func NewProc(fn func(ConsList) Cons) Cons {
-	return Cons{Type: Proc, Proc: fn}
+func NewProc(fn func(ConsList) Expr) Expr {
+	return Expr{Type: Proc, Proc: fn}
 }
 
-func args(cons Cons) ConsList {
+func args(cons Expr) ConsList {
 	unproc := cons.List
 	args := make(ConsList, 0)
 	for i := 1; i < len(unproc); i++ {

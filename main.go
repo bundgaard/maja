@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func evaluate(cons Cons, env Env) (Cons, error) {
+func evaluate(cons Expr, env Env) (Expr, error) {
 
 	switch cons.Type {
 	case Pair:
@@ -34,7 +34,7 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 				}
 				cell, err := evaluate(NewList(l), env)
 				if err != nil {
-					return Cons{}, err
+					return Expr{}, err
 				}
 				result = append(result, cell)
 			}
@@ -63,27 +63,27 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 			_, err := env.Find(cons.List[1].Value)
 			if err != nil {
 				fmt.Println(err)
-				return Cons{}, err
+				return Expr{}, err
 			}
-			return Cons{}, nil
+			return Expr{}, nil
 		case "if":
 			// if predicate true false
 			arg1, err := evaluate(cons.List[1], env)
 			if err != nil {
 				fmt.Println("error: if", err)
-				return Cons{}, err
+				return Expr{}, err
 			}
 			if arg1.Value == "#t" {
 				arg2, err := evaluate(cons.List[2], env)
 				if err != nil {
-					return Cons{}, err
+					return Expr{}, err
 
 				}
 				return arg2, nil
 			} else {
 				arg2, err := evaluate(cons.List[3], env)
 				if err != nil {
-					return Cons{}, err
+					return Expr{}, err
 				}
 				return arg2, nil
 			}
@@ -119,7 +119,7 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 				return proc.Proc(xs), nil
 			} else {
 				fmt.Println("nothing to execute", cons)
-				return Cons{}, fmt.Errorf("nothing to execute")
+				return Expr{}, fmt.Errorf("nothing to execute")
 			}
 
 		}
@@ -134,17 +134,17 @@ func evaluate(cons Cons, env Env) (Cons, error) {
 		}
 		env, err := env.Find(cons.Value)
 		if err != nil {
-			return Cons{}, fmt.Errorf("'%s' not defined", cons.Value)
+			return Expr{}, fmt.Errorf("'%s' not defined", cons.Value)
 		}
 		fn, ok := env[cons.Value]
 		if !ok {
-			return Cons{}, fmt.Errorf("'%s' not found in environment", cons)
+			return Expr{}, fmt.Errorf("'%s' not found in environment", cons)
 		}
 		return fn, nil
 	case Number:
 		return cons, nil
 	}
-	return Cons{}, nil
+	return Expr{}, nil
 }
 
 func insertInto(env Env, input ...string) {

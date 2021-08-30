@@ -9,8 +9,8 @@ import (
 func TestEvaluatorAst(t *testing.T) {
 
 	tests := []struct {
-		ast      Cons
-		expected Cons
+		ast      Expr
+		expected Expr
 	}{
 		{ast: NewList(ConsList{
 			NewSymbol("begin"),

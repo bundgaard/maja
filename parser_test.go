@@ -10,9 +10,9 @@ func TestQuote(t *testing.T) {
 	tests := []struct {
 		input string
 
-		expected Cons
+		expected Expr
 	}{
-		{"(1 2 3)", Cons{
+		{"(1 2 3)", Expr{
 			List: ConsList{
 				NewNumber(big.NewInt(1)),
 				NewNumber(big.NewInt(2)),
@@ -21,19 +21,19 @@ func TestQuote(t *testing.T) {
 		},
 		}, // end of (1 2 3)
 
-		{`(if (< 1 2) "true" "false")`, Cons{List: ConsList{
+		{`(if (< 1 2) "true" "false")`, Expr{List: ConsList{
 			NewSymbol("if"),
 			NewList(ConsList{NewSymbol("<"), NewNumber(big.NewInt(1)), NewNumber(big.NewInt((2)))}),
 			NewString("true"),
 			NewString("false"),
 		}}}, // end of (if (< 1 2) "true" "false")
 
-		{`(define r 10)`, Cons{
+		{`(define r 10)`, Expr{
 			List: ConsList{
 				NewSymbol("define"), NewSymbol("r"), NewNumber(big.NewInt(10)),
 			}}}, // end of (define r 10)
 
-		{`(begin (define r 10) (+ r r))`, Cons{List: ConsList{
+		{`(begin (define r 10) (+ r r))`, Expr{List: ConsList{
 			NewSymbol("begin"),
 			NewList(ConsList{NewSymbol("define"), NewSymbol("r"), NewNumber(big.NewInt(10))}), // (define r 10)
 			NewList(ConsList{NewSymbol("+"), NewSymbol("r"), NewSymbol("r")}),                 // (+ r r)

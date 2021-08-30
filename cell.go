@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 )
 
 type Cell struct {
@@ -31,19 +30,4 @@ func First(cell interface{}) *Cell {
 
 func (c Cell) String() string {
 	return ""
-}
-func (c *Cell) stringifyPair(quoted bool, sb strings.Builder) {
-	
-}
-
-
-func stringify(x interface{}, quoted bool, sb strings.Builder) {
-	if x == nil {
-		sb.WriteString("()")
-	} else {
-		switch x := x.(type) {
-		case *Cell:
-			x.stringifyPair(quoted, sb)
-		}
-	}
 }

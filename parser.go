@@ -23,8 +23,8 @@ func (p *Parser) nextToken() {
 	p.peek = p.l.NextToken()
 }
 
-func (p *Parser) parseList() Cons {
-	l := make([]Cons, 0)
+func (p *Parser) parseList() Expr {
+	l := make([]Expr, 0)
 	p.nextToken()      // eat (
 	token := p.current // define
 	for token != ")" && token != "EOF" {
@@ -35,8 +35,8 @@ func (p *Parser) parseList() Cons {
 	return NewList(l)
 }
 
-func (p *Parser) Parse() Cons {
-	var cons Cons
+func (p *Parser) Parse() Expr {
+	var cons Expr
 	token := p.current
 	for token != "EOF" {
 		switch token {
@@ -59,7 +59,7 @@ func (p *Parser) Parse() Cons {
 
 	return cons
 }
-func (p *Parser) parseQuote() Cons {
+func (p *Parser) parseQuote() Expr {
 	// '() -> Cons(List: Parse)
 	p.nextToken() // eat '
 	token := p.Parse()
